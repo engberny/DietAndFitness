@@ -1,0 +1,27 @@
+# Checks that the app compiles on every push. No Apple account or secrets needed.
+name: Build check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build for the iOS Simulator
+        run: |
+          xcodebuild build \
+            -project DietAndFitness.xcodeproj \
+            -scheme DietAndFitness \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
