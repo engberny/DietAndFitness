@@ -14,10 +14,13 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      ARCHIVE_PATH: ${{ runner.temp }}/DietAndFitness.xcarchive
-      KEY_PATH: ${{ runner.temp }}/AuthKey.p8
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set file paths
+        run: |
+          echo "ARCHIVE_PATH=$RUNNER_TEMP/DietAndFitness.xcarchive" >> "$GITHUB_ENV"
+          echo "KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
 
       - uses: maxim-lobanov/setup-xcode@v1
         with:
