@@ -10,9 +10,14 @@ A simple iPhone app for logging what you eat and your workouts, modeled on the D
 - **My Foods tab**: saved foods and homemade meals. A homemade meal can list its ingredients (like the
   Stuff sheet) and its totals add up automatically, or you can type the totals directly. One serving of a
   homemade meal is the whole batch, so a quarter of it is logged as 0.25 servings.
+- **Search online**: in My Foods (+ menu), or from Add Food and Add Ingredient, search the free USDA
+  FoodData Central database for basic foods, common meals or branded products. Pick a serving size and
+  save it to My Foods; after that it works offline like any other food. Searching works out of the box but
+  only a few times an hour; a free key from https://fdc.nal.usda.gov/api-key-signup (paste it in Settings,
+  gear button on the Log tab) removes that limit.
 - **Workouts tab**: exercises per day with optional sets, reps, weight, time and notes.
 
-Data stays on the phone (SwiftData). On first launch the app adds Stuff (with its ingredients), Milk and Eggs.
+Data stays on the phone (SwiftData); the internet is only used while searching online. On first launch the app adds Stuff (with its ingredients), Milk and Eggs.
 
 ## Run it
 

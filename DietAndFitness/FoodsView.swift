@@ -4,7 +4,7 @@ import SwiftData
 /// Saved foods and homemade meals that auto-fill the daily log.
 struct FoodsView: View {
     enum NewKind: String, Identifiable {
-        case food, meal
+        case food, meal, online
         var id: String { rawValue }
     }
 
@@ -59,12 +59,19 @@ struct FoodsView: View {
                     Menu {
                         Button { creating = .meal } label: { Label("New homemade meal", systemImage: "frying.pan") }
                         Button { creating = .food } label: { Label("New food", systemImage: "carrot") }
+                        Button { creating = .online } label: { Label("Search online", systemImage: "globe") }
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .sheet(item: $creating) { kind in FoodEditor(food: nil, homemade: kind == .meal) }
+            .sheet(item: $creating) { kind in
+                if kind == .online {
+                    OnlineFoodSearchView()
+                } else {
+                    FoodEditor(food: nil, homemade: kind == .meal)
+                }
+            }
             .sheet(item: $editing) { food in FoodEditor(food: food, homemade: food.isHomemade) }
         }
     }
@@ -238,6 +245,7 @@ struct IngredientEditor: View {
     @State private var draft: IngredientDraft
     let foods: [Food]
     let onSave: (IngredientDraft) -> Void
+    @State private var searchingOnline = false
 
     init(draft: IngredientDraft, foods: [Food], onSave: @escaping (IngredientDraft) -> Void) {
         _draft = State(initialValue: draft)
@@ -262,6 +270,19 @@ struct IngredientEditor: View {
                     Text(draft.total.summary)
                 }
                 FoodSuggestions(foods: foods, query: draft.name) { food in
+                    draft.name = food.name
+                    draft.macros = MacroDraft(food.macros)
+                }
+                Section {
+                    Button { searchingOnline = true } label: {
+                        Label("Search online", systemImage: "globe")
+                    }
+                } footer: {
+                    Text("Find this ingredient's numbers online and save it to My Foods.")
+                }
+            }
+            .sheet(isPresented: $searchingOnline) {
+                OnlineFoodSearchView(initialQuery: draft.name) { food in
                     draft.name = food.name
                     draft.macros = MacroDraft(food.macros)
                 }
