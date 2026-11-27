@@ -18,6 +18,7 @@ struct EntryEditor: View {
     @State private var saveAsFood = false
     /// Name of the saved food the numbers were last filled from, so typing doesn't refill over edits.
     @State private var filledFrom: String?
+    @State private var searchingOnline = false
 
     init(day: Date, entry: LogEntry? = nil) {
         self.day = day
@@ -70,6 +71,19 @@ struct EntryEditor: View {
                 }
 
                 FoodSuggestions(foods: foods, query: name) { fill(from: $0) }
+
+                if savedMatch == nil {
+                    Section {
+                        Button { searchingOnline = true } label: {
+                            Label("Search online", systemImage: "globe")
+                        }
+                    } footer: {
+                        Text("Look up the numbers online and save the food to My Foods.")
+                    }
+                }
+            }
+            .sheet(isPresented: $searchingOnline) {
+                OnlineFoodSearchView(initialQuery: name) { fill(from: $0) }
             }
             .navigationTitle(entry == nil ? "Add Food" : "Edit Entry")
             .navigationBarTitleDisplayMode(.inline)

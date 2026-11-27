@@ -165,8 +165,9 @@ struct SettingsView: View {
                 } footer: {
                     Text("Leave the calorie goal at 0 to hide it.")
                 }
+                OnlineFoodKeySetting()
             }
-            .navigationTitle("Goals")
+            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
