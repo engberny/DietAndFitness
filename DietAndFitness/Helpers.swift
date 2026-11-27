@@ -109,6 +109,50 @@ struct FoodSuggestions: View {
     }
 }
 
+/// A searchable list of everything in My Foods. Tapping one hands it back and closes the list.
+struct SavedFoodPicker: View {
+    @Environment(\.dismiss) private var dismiss
+    let foods: [Food]
+    let onPick: (Food) -> Void
+
+    @State private var query = ""
+
+    private var matches: [Food] {
+        let q = query.trimmed
+        return q.isEmpty ? foods : foods.filter { $0.name.localizedCaseInsensitiveContains(q) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if foods.isEmpty {
+                    ContentUnavailableView("No saved foods yet",
+                                           systemImage: "fork.knife",
+                                           description: Text("Foods you add in the Foods tab, or find online, show up here."))
+                } else if matches.isEmpty {
+                    ContentUnavailableView.search(text: query)
+                } else {
+                    ForEach(matches) { food in
+                        Button {
+                            onPick(food)
+                            dismiss()
+                        } label: { FoodRow(food: food) }
+                        .tint(.primary)
+                    }
+                }
+            }
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search My Foods")
+            .navigationTitle("My Foods")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
 struct FoodRow: View {
     let food: Food
 

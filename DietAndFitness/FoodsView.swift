@@ -103,6 +103,7 @@ struct FoodEditor: View {
     @State private var macros = MacroDraft()
     @State private var ingredients: [IngredientDraft] = []
     @State private var editingIngredient: IngredientDraft?
+    @State private var pickingSavedFood = false
 
     init(food: Food?, homemade: Bool) {
         self.food = food
@@ -122,6 +123,8 @@ struct FoodEditor: View {
 
     private var usesIngredients: Bool { isHomemade && !ingredients.isEmpty }
     private var ingredientTotal: Macros { ingredients.sumMacros { $0.total } }
+    /// Saved foods that can go into a meal (homemade meals are left out so a meal can't contain itself).
+    private var ingredientFoods: [Food] { foods.filter { !$0.isHomemade } }
 
     private var nameTaken: Bool {
         foods.contains { $0 !== food && $0.name.sameName(as: name) }
@@ -165,10 +168,13 @@ struct FoodEditor: View {
                         Button { editingIngredient = IngredientDraft() } label: {
                             Label("Add ingredient", systemImage: "plus.circle.fill")
                         }
+                        Button { pickingSavedFood = true } label: {
+                            Label("Add from My Foods", systemImage: "list.bullet.circle.fill")
+                        }
                     } header: {
                         Text("Ingredients")
                     } footer: {
-                        Text("Optional. List what went into the batch and the totals add up for you. Or skip this and type the totals below.")
+                        Text("Optional. List what went into the batch and the totals add up for you. Or skip this and type the totals below. Tap an ingredient to change how many servings went in.")
                     }
                 }
 
@@ -199,12 +205,17 @@ struct FoodEditor: View {
                 }
             }
             .sheet(item: $editingIngredient) { draft in
-                IngredientEditor(draft: draft, foods: foods.filter { !$0.isHomemade }) { saved in
+                IngredientEditor(draft: draft, foods: ingredientFoods) { saved in
                     if let index = ingredients.firstIndex(where: { $0.id == saved.id }) {
                         ingredients[index] = saved
                     } else {
                         ingredients.append(saved)
                     }
+                }
+            }
+            .sheet(isPresented: $pickingSavedFood) {
+                SavedFoodPicker(foods: ingredientFoods) { food in
+                    ingredients.append(IngredientDraft(name: food.name, macros: MacroDraft(food.macros)))
                 }
             }
         }
@@ -246,6 +257,7 @@ struct IngredientEditor: View {
     let foods: [Food]
     let onSave: (IngredientDraft) -> Void
     @State private var searchingOnline = false
+    @State private var pickingSavedFood = false
 
     init(draft: IngredientDraft, foods: [Food], onSave: @escaping (IngredientDraft) -> Void) {
         _draft = State(initialValue: draft)
@@ -274,11 +286,20 @@ struct IngredientEditor: View {
                     draft.macros = MacroDraft(food.macros)
                 }
                 Section {
+                    Button { pickingSavedFood = true } label: {
+                        Label("Choose from My Foods", systemImage: "list.bullet")
+                    }
                     Button { searchingOnline = true } label: {
                         Label("Search online", systemImage: "globe")
                     }
                 } footer: {
-                    Text("Find this ingredient's numbers online and save it to My Foods.")
+                    Text("Pick a food you already saved, or find this ingredient's numbers online and save it to My Foods.")
+                }
+            }
+            .sheet(isPresented: $pickingSavedFood) {
+                SavedFoodPicker(foods: foods) { food in
+                    draft.name = food.name
+                    draft.macros = MacroDraft(food.macros)
                 }
             }
             .sheet(isPresented: $searchingOnline) {
